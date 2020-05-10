@@ -1,2 +1,2 @@
-# simple-jee7-webapp
-Simple maven Jee7 webapp - Bootstrap WebJars 
+# java-logfile-tail 
+logfile tailer webapp
