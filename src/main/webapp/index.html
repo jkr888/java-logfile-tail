@@ -1,20 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Start Page</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel='stylesheet'
-	href='webjars/bootstrap/3.3.7-1/css/bootstrap.min.css'>
-<script src="webjars/jquery/3.1.1/jquery.min.js"></script>
-<script src="webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"></script>
+	href='webjars/bootstrap/4.4.1/css/bootstrap.min.css'>
+<script src="webjars/jquery/3.5.1/jquery.min.js"></script>
+<script src="webjars/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<title>Java Logfile Tailer</title>
+
 </head>
 <body>
-	<div class="container">
-		<br />
-		<div class="alert alert-success">
-			<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-			<strong>Success!</strong> It is working as we expected.
-		</div>
+	<header>
+		<!-- Fixed navbar -->
+		<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+			<span class="navbar-brand">Java Logfile Tailer <span
+				class="badge badge-primary">DevTools</span></span>
+			<ul class="navbar-nav mr-auto col-4">
+				<li class="nav-item active"></li>
+			</ul>
+			<form class="form-inline col-8" id="myForm">
+				<input class="form-control col-8" type="text" id="field"
+					placeholder="">
+			</form>
+		</nav>
+	</header>
+
+	<div class="container-fluid">
+		<pre><code id="content"></code></pre>
 	</div>
+
+	<script type="text/javascript">
+		var href = window.location.pathname;
+		var context = href.substring(0, href.lastIndexOf('/')) + "/";
+		var wsUri = "ws://" + document.location.host + context + "tailer";
+		var content = document.getElementById("content")
+		var keepScrolling = true;
+		var field = document.getElementById("field");
+
+		var searchParams = new URLSearchParams(window.location.search);
+		var file = searchParams.get("file");
+		field.value = file;
+		
+		document.getElementById("myForm").addEventListener('submit', function(event) {
+			event.preventDefault();
+		}); 
+		
+		console.log("file = " + file);
+
+		console.log("Connecting to " + wsUri);
+		var websocket = new WebSocket(wsUri);
+		websocket.onopen = function(evt) {
+			console.log("onOpen()");
+		};
+
+		websocket.onmessage = function(evt) {
+			content.innerHTML += evt.data + "\n";
+			if (keepScrolling)
+				window.scrollBy(0, 10000000);
+		};
+
+		websocket.onerror = function(evt) {
+			console.log("Errro:"+evt);
+		};
+
+		$(document).bind("keydown", function(event) {
+			if (event.keyCode == 32)
+				setTimeout(function() {
+					keepScrolling = !keepScrolling;
+					console.log("keepScrolling=" + keepScrolling);
+				}, 0);
+		});
+
+		//window.setInterval(retrieveLog, 5000);
+
+		window.onload = function() {
+			console.log("window.onload()");
+			field
+					.addEventListener(
+							"keyup",
+							function(event) {
+								// Number 13 is the "Enter" key on the keyboard
+								if (event.keyCode === 13) {
+									console.log("Enter");
+									// Cancel the default action, if needed
+									event.preventDefault();
+									// Trigger the button element with a click
+									websocket.send(field.value);
+									console.log(field.value);
+								}
+							});
+		};
+	</script>
+
 </body>
 </html>

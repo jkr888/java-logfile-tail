@@ -5,15 +5,15 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.jkr</groupId>
-	<artifactId>jee7webapp</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>java-logfile-tail</artifactId>
+	<version>1.0</version>
 	<packaging>war</packaging>
 
-	<name>jee7webapp</name>
+	<name>java-logfile-tail</name>
 
 	<properties>
 		<endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
-		<jetty.version>9.3.16.v20170120</jetty.version>
+		<jetty.version>9.4.19.v20190610</jetty.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -27,12 +27,27 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>bootstrap</artifactId>
-			<version>3.3.7-1</version>
+			<version>4.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>jquery</artifactId>
-			<version>3.1.1</version>
+			<version>3.5.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>popper.js</artifactId>
+			<version>2.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>io.reactivex.rxjava2</groupId>
+			<artifactId>rxjava</artifactId>
+			<version>2.2.8</version>
 		</dependency>
 	</dependencies>
 
@@ -42,15 +57,13 @@
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<version>${jetty.version}</version>
-        
 				<configuration>
-          			<scanIntervalSeconds>2</scanIntervalSeconds>
-					<skip>false</skip>
-					<httpConnector>
-						<host>localhost</host>
-						<port>8080</port>
-					</httpConnector>
-					<reload>automatic</reload>
+					<webApp>
+						<_initParams>
+							<org.eclipse.jetty.servlet.Default.useFileMappedBuffer>false</org.eclipse.jetty.servlet.Default.useFileMappedBuffer>
+						</_initParams>
+					</webApp>
+					<scanIntervalSeconds>5</scanIntervalSeconds>
 				</configuration>
 			</plugin>
 			<plugin>
