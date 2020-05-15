@@ -10,23 +10,20 @@
 
 </head>
 <body>
-	<header>
-		<!-- Fixed navbar -->
-		<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-			<span class="navbar-brand">Java Logfile Tailer <span
-				class="badge badge-primary">DevTools</span></span>
-			<ul class="navbar-nav mr-auto col-4">
-				<li class="nav-item active"></li>
-			</ul>
-			<form class="form-inline col-8" id="myForm">
-				<input class="form-control col-8" type="text" id="field"
-					placeholder="">
-			</form>
-		</nav>
-	</header>
-
+	<nav class="navbar navbar-expand-md navbar-dark static-top bg-dark">
+		<span class="navbar-brand">Java Logfile Tailer <span
+			class="badge badge-primary">DevTools</span></span>
+		<ul class="navbar-nav mr-auto col-4">
+			<li class="nav-item active"></li>
+		</ul>
+		<form class="form-inline col-8" id="myForm">
+			<input class="form-control col-8" type="text" id="field"
+				placeholder="">
+		</form>
+	</nav>
+	<br />
 	<div class="container-fluid">
-		<pre><code id="content"></code></pre>
+		<pre id="content"></pre>
 	</div>
 
 	<script type="text/javascript">
@@ -36,59 +33,84 @@
 		var content = document.getElementById("content")
 		var keepScrolling = true;
 		var field = document.getElementById("field");
+		var maxLength = 5000;
 
 		var searchParams = new URLSearchParams(window.location.search);
 		var file = searchParams.get("file");
 		field.value = file;
-		
-		document.getElementById("myForm").addEventListener('submit', function(event) {
-			event.preventDefault();
-		}); 
-		
+
+		document.getElementById("myForm").addEventListener('submit',
+				function(event) {
+					event.preventDefault();
+				});
+
 		console.log("file = " + file);
 
 		console.log("Connecting to " + wsUri);
 		var websocket = new WebSocket(wsUri);
 		websocket.onopen = function(evt) {
 			console.log("onOpen()");
+			websocket.send(file);
 		};
 
 		websocket.onmessage = function(evt) {
-			content.innerHTML += evt.data + "\n";
-			if (keepScrolling)
-				window.scrollBy(0, 10000000);
+			//console.log("RECV: " + evt.data);
+			if (evt.data == "pong") {
+			} else {
+				//content.innerHTML += evt.data + "\n";
+				content.innerText += evt.data + "\n";
+				if (keepScrolling)
+					window.scrollBy(0, 10000000);
+
+			}
 		};
 
 		websocket.onerror = function(evt) {
-			console.log("Errro:"+evt);
+			console.log("Errro:" + evt);
 		};
 
-		$(document).bind("keydown", function(event) {
+		document.addEventListener("keydown", function(event) {
+			// spacebar -- toggle scrolling
 			if (event.keyCode == 32)
 				setTimeout(function() {
 					keepScrolling = !keepScrolling;
 					console.log("keepScrolling=" + keepScrolling);
 				}, 0);
+			// KeyC -- clear content
+			if (event.keyCode == 67)
+				setTimeout(function() {
+					content.innerHTML = "";
+					console.log("KeyC - Clear Buffer");
+				}, 0);
 		});
 
-		//window.setInterval(retrieveLog, 5000);
+		window.setInterval(function() {
+			//console.log("SEND:ping")
+			websocket.send("ping");
+			
+			// truncate content 
+			var size = content.innerHTML.length;
+			if (size > maxLength) {
+				console.log("Truncating "+maxLength);
+				content.innerHTML = content.innerHTML.substring(size - maxLength);
+			}
+			
+		}, 3000);
 
 		window.onload = function() {
-			console.log("window.onload()");
-			field
-					.addEventListener(
-							"keyup",
-							function(event) {
-								// Number 13 is the "Enter" key on the keyboard
-								if (event.keyCode === 13) {
-									console.log("Enter");
-									// Cancel the default action, if needed
-									event.preventDefault();
-									// Trigger the button element with a click
-									websocket.send(field.value);
-									console.log(field.value);
-								}
-							});
+			// enter on field --> switch to new file
+			field.addEventListener("keyup", function(event) {
+				// Number 13 is the "Enter" key on the keyboard
+				if (event.keyCode === 13) {
+					// Cancel the default action, if needed
+					event.preventDefault();
+					// Trigger the button element with a click
+					websocket.send(field.value);
+					//console.log("SEND:" + field.value);
+					// clear content
+					content.innerHTML = "";
+				}
+			});
 		};
 	</script>
 

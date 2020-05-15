@@ -41,7 +41,6 @@ package org.jkwan.websocket;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import javax.websocket.CloseReason;
 import javax.websocket.OnClose;
@@ -49,8 +48,6 @@ import javax.websocket.OnMessage;
 import javax.websocket.RemoteEndpoint.Async;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
-
-import org.apache.commons.io.input.ReversedLinesFileReader;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -61,50 +58,72 @@ import io.reactivex.schedulers.Schedulers;
  */
 @ServerEndpoint("/tailer")
 public class FileTailerEndpoint implements Observer<Object> {
-	
+
 	private Observable<?> stream;
 	private Disposable disposable;
 	private String filename;
 	private Async remote;
-    int refreshRate = 5000;
-    private String mode = "tail";
-	
+	int refreshRate = 5000;
+	private String mode = "tail";
+
 	public void init(String filename) {
-		System.out.println("Init,file="+filename+",ms="+refreshRate+",mode="+mode);
+		System.out.println("Init,file=" + filename + ",ms=" + refreshRate + ",mode=" + mode);
 		this.filename = filename;
 		FileTailer tailer = new FileTailer(new File(this.filename));
-		if (mode.equalsIgnoreCase("all")) tailer.setEofOnly(false);
+		if (mode.equalsIgnoreCase("all"))
+			tailer.setEofOnly(false);
 		this.stream = tailer.getStream(refreshRate);
-        this.stream.subscribeOn(Schedulers.io()).subscribe(this);
+		this.stream.subscribeOn(Schedulers.io()).subscribe(this);
 	}
-	
+
 	@javax.websocket.OnOpen
 	public void onOpen(Session session) throws IOException {
 		this.remote = session.getAsyncRemote();
 	}
 
-    @OnMessage
-    public String onMessage(String text) {
-    	
-    	String[] token = text.split("#");
-    	
-    	String filename = "";
-    	
-    	if (token[0] != null) filename = token[0];
-    	if (token.length > 1) refreshRate = Integer.parseInt(token[1]);
-    	if (token.length > 2) mode = token[2]; 
+	@OnMessage
+	public String onMessage(String text) {
 
-    	if (!filename.equalsIgnoreCase(this.filename)) {
-    		init(filename);
-    	}
-    	return "<<< CMD:Filename="+filename+",ms="+refreshRate+",mode="+mode;
-    }
-    
-    @OnClose
-    public void onClose(Session session, CloseReason reason) {
-//    	this.disposable.dispose();
-    }
-    
+		String[] token = text.split("#");
+
+		String filenameOrCmd = "";
+
+		if (token[0] != null)
+			filenameOrCmd = token[0];
+		if (token.length > 1)
+			refreshRate = Integer.parseInt(token[1]);
+		if (token.length > 2)
+			mode = token[2];
+
+		// handle ping
+		if (filenameOrCmd.equalsIgnoreCase("ping")) {
+			return "pong";
+		}
+
+		if (!filenameOrCmd.equalsIgnoreCase(this.filename)) {
+			init(filenameOrCmd);
+		}
+		
+		StringBuilder resp = new StringBuilder();
+		resp.append("<<< CMD:Filename=" + filenameOrCmd + ",ms=" + refreshRate + ",mode=" + mode);
+		
+		// get last 10
+		try {
+			StringBuilder last50 = TailUtil.getLastLines(this.filename, 10);
+			resp.append(last50);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return resp.toString();
+	}
+
+	@OnClose
+	public void onClose(Session session, CloseReason reason) {
+		if (this.disposable != null)
+			this.disposable.dispose();
+	}
 
 	@Override
 	public void onSubscribe(Disposable d) {
