@@ -10,9 +10,9 @@ Screenshot
 Platform Tested
 ---------------
   * Weblogic 12c
-  * Jetty
-  * Tomcat
-  * Springboot??
+  * Jetty 9.4.x
+  * Tomcat 9.x
+  * Springboot executable ( upcoming )
 
 Features
 --------
