@@ -5,7 +5,7 @@ Replace Jetty websockets dependency with standard javax.websockets
 
 Screenshot
 ----------
-
+![Example Weblogic AdminServer log](https://github.com/jkr888/java-logfile-tail/picture/screenshot-01.png)
 
 Platform Tested
 ---------------
