@@ -6,23 +6,45 @@
 	href='webjars/bootstrap/4.4.1/css/bootstrap.min.css'>
 <script src="webjars/jquery/3.5.1/jquery.min.js"></script>
 <script src="webjars/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-<title>Java Logfile Tailer</title>
+<style>
+html { font-size: x-small; }
+
+.badge-success {
+ -webkit-transition: background-color 2s ease-out;
+ -moz-transition: background-color 2s ease-out;
+ -o-transition: background-color 2s ease-out;
+ transition: background-color 2s ease-out;
+}
+
+.blink {
+  background: #17202A;
+}
+
+</style>
+<title>JavaLogTailer</title>
 
 </head>
 <body>
-	<nav class="navbar navbar-expand-md navbar-dark static-top bg-dark">
-		<span class="navbar-brand">Java Logfile Tailer <span
-			class="badge badge-primary">DevTools</span></span>
-		<ul class="navbar-nav mr-auto col-4">
-			<li class="nav-item active"></li>
-		</ul>
-		<form class="form-inline col-8" id="myForm">
-			<input class="form-control col-8" type="text" id="field"
-				placeholder="">
-		</form>
+	<nav class="navbar navbar-dark sticky-top bg-dark">
+		<span class="navbar-brand"> JavaLogTailer 
+		<a id="olstatus" class="badge badge-success">online...</a>
+		-
+		<a id="btn-clear" onclick="clearRows()" class="badge badge-info">Clear</a>
+		<a id="btn-mark" onclick="mark()" class="badge badge-info">Mark</a>
+		<a id="btn-scroll" onclick="scrollToggle()" class="badge badge-info">Scroll Enabled</a>
+		<a id="btn-ping" onclick="pingToggle()" class="badge badge-info">Ping OFF</a>
+		</span>
+		<input class="form-control" type="text" id="field" placeholder="">
 	</nav>
 	<br />
 	<div class="container-fluid">
+		<table class="table table-sm" id="contentTable">
+			<tbody>
+				<tr>
+					<td>Starting . . .</td>
+				</tr>
+			</tbody>
+		</table>
 		<pre id="content"></pre>
 	</div>
 
@@ -32,69 +54,102 @@
 		var wsUri = "ws://" + document.location.host + context + "tailer";
 		var content = document.getElementById("content")
 		var keepScrolling = true;
+		var echoPing = false;
+		var blinking = false;
 		var field = document.getElementById("field");
 		var maxLength = 5000;
+		var tableRef = document.getElementById('contentTable').getElementsByTagName('tbody')[0];
+		var olstatus = document.getElementById('olstatus');
+		var btnScroll = document.getElementById('btn-scroll');
+		var btnClear = document.getElementById('btn-clear');
+		var btnMark = document.getElementById('btn-mark');
+		var btnPing = document.getElementById('btn-ping');
 
 		var searchParams = new URLSearchParams(window.location.search);
 		var file = searchParams.get("file");
 		field.value = file;
+		
+		function addRow(text) {
+			var newRow   = tableRef.insertRow();
+			var newCell  = newRow.insertCell(0);
+			var newText  = document.createTextNode(text);
+			newCell.appendChild(newText);
+		}
+		
+		function clearRows() { while(tableRef.rows.length > 0) { tableRef.deleteRow(0); } }
+		
+		function splitLines(t) { return t.split(/\r\n|\r|\n/); }
+		function mark() { addRow("######## ######## ########"); }
 
-		document.getElementById("myForm").addEventListener('submit',
-				function(event) {
-					event.preventDefault();
-				});
+		function scrollToggle() { 
+			keepScrolling = !keepScrolling; 
+			if (keepScrolling) 
+				btnScroll.innerText = "Scroll Enabled";
+			else 
+				btnScroll.innerText = "Scroll OFF";
+		}
 
-		console.log("file = " + file);
+		function pingToggle() { 
+			echoPing = !echoPing;	
+			if (echoPing)
+				btnPing.innerText = "Ping Enabled";
+			else
+				btnPing.innerText = "Ping OFF";
+		}
+		
+		function blinkToggle() {
+			blinking = !blinking;
+			if (blinking)
+				olstatus.classList.add("blink");
+			else
+				olstatus.classList.remove("blink");
+		}
 
-		console.log("Connecting to " + wsUri);
+		function scroll() { if (keepScrolling) window.scrollBy(0, 1000000); };
+		function updateStatus() { olstatus.innerText = new Date().toJSON(); blinkToggle(); };
+
 		var websocket = new WebSocket(wsUri);
 		websocket.onopen = function(evt) {
-			console.log("onOpen()");
 			websocket.send(file);
 		};
 
 		websocket.onmessage = function(evt) {
-			//console.log("RECV: " + evt.data);
 			if (evt.data == "pong") {
+				if (echoPing) {
+					addRow(new Date().toJSON() + " Received " + evt.data);
+				}
 			} else {
-				//content.innerHTML += evt.data + "\n";
-				content.innerText += evt.data + "\n";
-				if (keepScrolling)
-					window.scrollBy(0, 10000000);
-
+				// loop thru lines
+				var lines = splitLines(evt.data);
+				lines.forEach(function(line) {
+					addRow(line);
+				});
 			}
+			updateStatus();
+			scroll();
 		};
 
 		websocket.onerror = function(evt) {
 			console.log("Errro:" + evt);
 		};
 
-		document.addEventListener("keydown", function(event) {
-			// spacebar -- toggle scrolling
-			if (event.keyCode == 32)
-				setTimeout(function() {
-					keepScrolling = !keepScrolling;
-					console.log("keepScrolling=" + keepScrolling);
-				}, 0);
-			// KeyC -- clear content
-			if (event.keyCode == 67)
-				setTimeout(function() {
-					content.innerHTML = "";
-					console.log("KeyC - Clear Buffer");
-				}, 0);
+		document.addEventListener( "keydown",
+			function(event) {
+				// KeyS -- toggle scrolling
+				if (event.keyCode == 83) setTimeout(scrollToggle, 0);
+				// KeyC -- clear content
+				if (event.keyCode == 67) setTimeout(clearRows, 0);
+				// keyM -- insert marker 
+				if (event.keyCode == 77) setTimeout(mark, 0);
+				// keyP -- toggle scrolling
+				if (event.keyCode == 80) setTimeout(pingToggle, 0);
 		});
+		
 
 		window.setInterval(function() {
-			//console.log("SEND:ping")
 			websocket.send("ping");
-			
-			// truncate content 
-			var size = content.innerHTML.length;
-			if (size > maxLength) {
-				console.log("Truncating "+maxLength);
-				content.innerHTML = content.innerHTML.substring(size - maxLength);
-			}
-			
+			if (echoPing) { addRow(new Date().toJSON() + " Sending ping"); } 
+			scroll();
 		}, 3000);
 
 		window.onload = function() {
@@ -106,9 +161,7 @@
 					event.preventDefault();
 					// Trigger the button element with a click
 					websocket.send(field.value);
-					//console.log("SEND:" + field.value);
-					// clear content
-					content.innerHTML = "";
+					clearRows();
 				}
 			});
 		};

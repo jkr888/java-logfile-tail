@@ -3,27 +3,28 @@ Inspired by [Websocket log tailer](https://github.com/davidmoten/websockets-log-
 
 Replace Jetty websockets dependency with standard javax.websockets
 
-This project should run on any "javax.websockets" compatible containers. Tested on :
-* Weblogic 12c
-* Jetty
-* Tomcat
+Screenshot
+----------
 
-Keyboard Shortcuts:
-- Spacebar --> Toggle scrolling
-- C --> Clear buffer
 
-Enter filepath in the text field to change tailer target
+Platform Tested
+---------------
+  * Weblogic 12c
+  * Jetty
+  * Tomcat
+  * Springboot??
 
-Bookmark with file options index.html?file=/usr/logs/test.log
-
-Screenshots
+Features
+--------
+  * Scrolling On/OFF
+  * Insert marker line
+  * Clear buffer
 
 Build
 ---------
-
     git clone https://github.com/jkr888/java-logfile-tail
     cd java-logfile-tail
-    mvn jetty:run
+    mvn clean jetty:run
     
 Go to [http://localhost:8080/index.html](http://localhost:8080/index.html)
 

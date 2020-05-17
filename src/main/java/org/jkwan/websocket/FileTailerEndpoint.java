@@ -1,42 +1,41 @@
-/*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+/*******
+
+Copyright (c) 2017, 2019, Oracle Corporation and/or its affiliates. All rights reserved.
+
+Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+
+Subject to the condition set forth below, permission is hereby granted to any person obtaining
+a copy of this software, associated documentation and/or data (collectively the "Software"),
+free of charge and under any and all copyright rights in the Software, and any and all patent
+rights owned or freely licensable by each licensor hereunder covering either (i) the unmodified
+Software as contributed to or provided by such licensor, or (ii) the Larger Works
+(as defined below), to deal in both
+
+(a) the Software, and
+
+(b) any piece of software and/or hardware listed in the lrgrwrks.txt file if one is included with
+the Software (each a "Larger Work" to which the Software is contributed by such licensors), without
+restriction, including without limitation the rights to copy, create derivative works of, display,
+perform, and distribute the Software and make, use, sell, offer for sale, import, export, have made,
+and have sold the Software and the Larger Work(s), and to sublicense the foregoing rights on either
+these or other terms.
+
+This license is subject to the following condition:
+
+The above copyright notice and either this complete permission notice or at a minimum a reference to
+the UPL must be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ ***
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- */
+ * @author johny.kwan@oracle.com 
+ *         jkr888@gmail.com
+ *         
+ ***/
 package org.jkwan.websocket;
 
 import java.io.File;
@@ -54,8 +53,6 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-/**
- */
 @ServerEndpoint("/tailer")
 public class FileTailerEndpoint implements Observer<Object> {
 
@@ -105,7 +102,7 @@ public class FileTailerEndpoint implements Observer<Object> {
 		}
 		
 		StringBuilder resp = new StringBuilder();
-		resp.append("<<< CMD:Filename=" + filenameOrCmd + ",ms=" + refreshRate + ",mode=" + mode);
+		resp.append("<<< CMD: filename=" + filenameOrCmd + ",ms=" + refreshRate + ",mode=" + mode + "\n");
 		
 		// get last 10
 		try {
