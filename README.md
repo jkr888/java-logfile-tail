@@ -1,7 +1,7 @@
 # java-logfile-tail 
 Inspired by [Websocket log tailer](https://github.com/davidmoten/websockets-log-tail)
 
-Replace Jetty websockets dependency with standard javax.websockets
+Replace Jetty websockets dependency with standard javax.websockets (JSR356)
 
 Screenshot
 ----------
