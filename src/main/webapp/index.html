@@ -20,6 +20,10 @@ html { font-size: x-small; }
   background: #17202A;
 }
 
+.table-sm td {
+  font-family: monospace;
+}
+
 </style>
 <title>JavaLogTailer</title>
 
@@ -70,16 +74,18 @@ html { font-size: x-small; }
 		field.value = file;
 		
 		function addRow(text) {
+			var str = text.replace(/(?:\r\n|\r|\n)/g, '<br>');
 			var newRow   = tableRef.insertRow();
 			var newCell  = newRow.insertCell(0);
-			var newText  = document.createTextNode(text);
-			newCell.appendChild(newText);
+			//var newText  = document.createTextNode(text);
+			//newCell.appendChild(newText);
+			newCell.innerHTML = str;
 		}
 		
 		function clearRows() { while(tableRef.rows.length > 0) { tableRef.deleteRow(0); } }
 		
 		function splitLines(t) { return t.split(/\r\n|\r|\n/); }
-		function mark() { addRow("######## ######## ########"); }
+		function mark() { addRow("########\n ########\n ########"); }
 
 		function scrollToggle() { 
 			keepScrolling = !keepScrolling; 
