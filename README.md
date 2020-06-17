@@ -28,5 +28,8 @@ Build
     
 Go to [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
-
-
+Pre-Build WAR
+---------
+    cd release folder
+    upload latest war into your favorite server and enjoy!
+       
